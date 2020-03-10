@@ -2,17 +2,25 @@
 name: Subscription - Entitlement Report
 snippet: false
 model: ReportTemplate
+template_inputs:
+- name: days_from_now
+  required: false
+  input_type: user
+  description: "Show subscriptions expiring in <= this many days.  Leave blank to show all entitlements."
+  advanced: false
+  value_type: plain
+  options: "7\r\n30\r\n60\r\n90\r\n120\r\n180"
 require:
 - plugin: katello
   version: 3.16.0
 -%>
-<%- report_headers 'Name', 'Organization', 'Lifecycle Environment', 'Content View', 'Host Collections', 'Virtual', 'Guest of Host', 'OS', 
-'Arch', 'Sockets', 'RAM', 'Cores', 'SLA', 'Products', 'Subscription Name', 'Subscription Type', 'Subscription Quantity', 
-'Subscription SKU', 'Subscription Contract', 'Subscription Account', 'Subscription Start', 'Subscription End', 'Subscription Guest' -%>
 <%- load_hosts(includes: [:lifecycle_environment, :operatingsystem, :architecture, :content_view, :organization, :reported_data, :subscription_facet, :pools => [:subscription]]).each_record do |host| -%>
+<%-   days_from_now = input('days_from_now').to_i -%>
+<%-   should_filter = !input('days_from_now').empty? -%>
 <%-   host.pools.each do |pool| -%>
+<%-     next if should_filter && pool.expiring_in_days > days_from_now -%>
 <%-     report_row(
-          'Name': host.name,
+          'Host Name': host.name,
           'Organization': host.organization,
           'Lifecycle Environment': host.lifecycle_environment,
           'Content View': host.content_view,
@@ -35,7 +43,8 @@ require:
           'Subscription Account': pool.account_number,
           'Subscription Start': pool.start_date,
           'Subscription End': pool.end_date,
-          'Subscription Guest': registered_through(host)
+          'Subscription Guest': registered_through(host),
+          'Subscription Ends In': "#{pool.expiring_in_days} days"
           ) -%>
 <%-   end -%>
 <%- end -%>
