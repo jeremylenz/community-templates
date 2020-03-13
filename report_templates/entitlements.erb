@@ -3,7 +3,7 @@ name: Subscription - Entitlement Report
 snippet: false
 model: ReportTemplate
 template_inputs:
-- name: days_from_now
+- name: Days from Now
   required: false
   input_type: user
   description: "Show subscriptions expiring in <= this many days.  Leave blank to show all entitlements."
@@ -14,11 +14,18 @@ require:
 - plugin: katello
   version: 3.16.0
 -%>
-<%- load_hosts(includes: [:lifecycle_environment, :operatingsystem, :architecture, :content_view, :organization, :reported_data, :subscription_facet, :pools => [:subscription]]).each_record do |host| -%>
-<%-   days_from_now = input('days_from_now').to_i -%>
-<%-   should_filter = !input('days_from_now').empty? -%>
-<%-   host.pools.each do |pool| -%>
-<%-     next if should_filter && pool.expiring_in_days > days_from_now -%>
+<%- days_from_now = input('Days from Now').to_i -%>
+<%- should_filter = !input('Days from Now').empty? -%>
+<%- report_headers 'Name', 'Organization', 'Lifecycle Environment', 'Content View', 'Host Collections', 'Virtual', 'Guest of Host', 'OS', 'Arch', 'Sockets', 'RAM', 'Cores', 'SLA', 'Products', 'Subscription Name', 'Subscription Type', 'Subscription Quantity', 'Subscription SKU', 'Subscription Contract', 'Subscription Account', 'Subscription Start', 'Subscription End', 'Subscription Guest', 'Subscription Ends In' -%>
+<%- load_hosts(includes: [:lifecycle_environment, :operatingsystem, :architecture, :content_view, :organization, :reported_data, :subscription_facet, :pools => [:subscription]], -%>
+<%- search: should_filter && "pools_expiring_in_days = #{days_from_now}"-%>
+<%- ).each_record do |host| -%>
+<%-   if should_filter -%>
+<%-     pools_to_show = host.pools_expiring_in_days(days_from_now) -%>
+<%-   else -%>
+<%-     pools_to_show = host.pools -%>
+<%-   end -%>
+<%-   pools_to_show.each do |pool| -%>
 <%-     report_row(
           'Host Name': host.name,
           'Organization': host.organization,
