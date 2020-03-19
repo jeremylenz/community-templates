@@ -14,18 +14,13 @@ require:
 - plugin: katello
   version: 3.16.0
 -%>
-<%- days_from_now = input('Days from Now').to_i -%>
+<%- days_from_now = input('Days from Now') -%>
 <%- should_filter = !input('Days from Now').empty? -%>
-<%- report_headers 'Name', 'Organization', 'Lifecycle Environment', 'Content View', 'Host Collections', 'Virtual', 'Guest of Host', 'OS', 'Arch', 'Sockets', 'RAM', 'Cores', 'SLA', 'Products', 'Subscription Name', 'Subscription Type', 'Subscription Quantity', 'Subscription SKU', 'Subscription Contract', 'Subscription Account', 'Subscription Start', 'Subscription End', 'Subscription Guest', 'Subscription Ends In' -%>
+<%- report_headers 'Name', 'Organization', 'Lifecycle Environment', 'Content View', 'Host Collections', 'Virtual', 'Guest of Host', 'OS', 'Arch', 'Sockets', 'RAM', 'Cores', 'SLA', 'Products', 'Subscription Name', 'Subscription Type', 'Subscription Quantity', 'Subscription SKU', 'Subscription Contract', 'Subscription Account', 'Subscription Start', 'Subscription End', 'Subscription Guest', 'Subscription Expires In' -%>
 <%- load_hosts(includes: [:lifecycle_environment, :operatingsystem, :architecture, :content_view, :organization, :reported_data, :subscription_facet, :pools => [:subscription]], -%>
-<%- search: should_filter && "pools_expiring_in_days = #{days_from_now}"-%>
-<%- ).each_record do |host| -%>
-<%-   if should_filter -%>
-<%-     pools_to_show = host.pools_expiring_in_days(days_from_now) -%>
-<%-   else -%>
-<%-     pools_to_show = host.pools -%>
-<%-   end -%>
-<%-   pools_to_show.each do |pool| -%>
+<%-   search: should_filter && "pools_expiring_in_days = #{days_from_now}" -%>
+<%-   ).each_record do |host| -%>
+<%-   host.pools_expiring_in_days(days_from_now).each do |pool| -%>
 <%-     report_row(
           'Host Name': host.name,
           'Organization': host.organization,
@@ -51,7 +46,7 @@ require:
           'Subscription Start': pool.start_date,
           'Subscription End': pool.end_date,
           'Subscription Guest': registered_through(host),
-          'Subscription Ends In': "#{pool.expiring_in_days} days"
+          'Subscription Expires In': "#{pool.expiring_in_days} days"
           ) -%>
 <%-   end -%>
 <%- end -%>
