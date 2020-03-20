@@ -20,7 +20,7 @@ require:
 <%- load_hosts(includes: [:lifecycle_environment, :operatingsystem, :architecture, :content_view, :organization, :reported_data, :subscription_facet, :pools => [:subscription]], -%>
 <%-   search: should_filter && "pools_expiring_in_days = #{days_from_now}" -%>
 <%- ).each_record do |host| -%>
-<%-   host.pools_expiring_in_days(days_from_now).each do |pool| -%>
+<%-   host.pools.expiring_in_days(days_from_now).sort { |p| p.end_date }.each do |pool| -%>
 <%-     report_row(
           'Host Name': host.name,
           'Organization': host.organization,
@@ -46,7 +46,7 @@ require:
           'Subscription Start': pool.start_date,
           'Subscription End': pool.end_date,
           'Subscription Guest': registered_through(host),
-          'Subscription Expires In': "#{pool.expiring_in_days} days"
+          'Subscription Expires In': "#{pool.days_until_expiration} days"
           ) -%>
 <%-   end -%>
 <%- end -%>
