@@ -15,11 +15,11 @@ require:
   version: 3.16.0
 -%>
 <%- days_from_now = input('Days from Now') -%>
-<%- should_filter = !input('Days from Now').empty? -%>
+<%- should_filter = days_from_now.present? -%>
 <%- report_headers 'Name', 'Organization', 'Lifecycle Environment', 'Content View', 'Host Collections', 'Virtual', 'Guest of Host', 'OS', 'Arch', 'Sockets', 'RAM', 'Cores', 'SLA', 'Products', 'Subscription Name', 'Subscription Type', 'Subscription Quantity', 'Subscription SKU', 'Subscription Contract', 'Subscription Account', 'Subscription Start', 'Subscription End', 'Subscription Guest', 'Subscription Expires In' -%>
 <%- load_hosts(includes: [:lifecycle_environment, :operatingsystem, :architecture, :content_view, :organization, :reported_data, :subscription_facet, :pools => [:subscription]], -%>
 <%-   search: should_filter && "pools_expiring_in_days = #{days_from_now}" -%>
-<%-   ).each_record do |host| -%>
+<%- ).each_record do |host| -%>
 <%-   host.pools_expiring_in_days(days_from_now).each do |pool| -%>
 <%-     report_row(
           'Host Name': host.name,
