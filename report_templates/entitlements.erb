@@ -4,17 +4,18 @@ snippet: false
 model: ReportTemplate
 template_inputs:
 - name: Days from Now
-  required: false
+  required: true
   input_type: user
-  description: "Show subscriptions expiring in <= this many days.  Leave blank to show all entitlements."
+  description: "Show subscriptions expiring in <= this many days.  Select 'no limit' to show all entitlements."
   advanced: false
   value_type: plain
-  options: "7\r\n30\r\n60\r\n90\r\n120\r\n180"
+  options: "no limit\r\n7\r\n30\r\n60\r\n90\r\n120\r\n180"
 require:
 - plugin: katello
   version: 3.16.0
 -%>
 <%- days_from_now = input('Days from Now') -%>
+<%- days_from_now = "" if days_from_now == 'no limit' -%>
 <%- should_filter = days_from_now.present? -%>
 <%- report_headers 'Name', 'Organization', 'Lifecycle Environment', 'Content View', 'Host Collections', 'Virtual', 'Guest of Host', 'OS', 'Arch', 'Sockets', 'RAM', 'Cores', 'SLA', 'Products', 'Subscription Name', 'Subscription Type', 'Subscription Quantity', 'Subscriptions Consumed', 'Subscription SKU', 'Subscription Contract', 'Subscription Account', 'Subscription Start', 'Subscription End', 'Subscription Guest', 'Subscription Expires In' -%>
 <%- load_hosts(includes: [:lifecycle_environment, :operatingsystem, :architecture, :content_view, :organization, :reported_data, :subscription_facet, :pools => [:subscription]], -%>
