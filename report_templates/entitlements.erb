@@ -17,7 +17,7 @@ require:
 <%- days_from_now = input('Days from Now') -%>
 <%- days_from_now = "" if days_from_now == 'no limit' -%>
 <%- should_filter = days_from_now.present? -%>
-<%- report_headers 'Name', 'Organization', 'Lifecycle Environment', 'Content View', 'Host Collections', 'Virtual', 'Guest of Host', 'OS', 'Arch', 'Sockets', 'RAM', 'Cores', 'SLA', 'Products', 'Subscription Name', 'Subscription Type', 'Subscription Quantity', 'Subscriptions Consumed', 'Subscription SKU', 'Subscription Contract', 'Subscription Account', 'Subscription Start', 'Subscription End', 'Subscription Guest', 'Subscription Expires In' -%>
+<%- report_headers 'Name', 'Organization', 'Lifecycle Environment', 'Content View', 'Host Collections', 'Virtual', 'Guest of Host', 'OS', 'Arch', 'Sockets', 'RAM', 'Cores', 'SLA', 'Products', 'Subscription Name', 'Subscription Type', 'Subscription Quantity', 'Subscriptions Consumed', 'Subscription SKU', 'Subscription Contract', 'Subscription Account', 'Subscription Start', 'Subscription End', 'Subscription Guest', 'Days Remaining' -%>
 <%- load_hosts(includes: [:lifecycle_environment, :operatingsystem, :architecture, :content_view, :organization, :reported_data, :subscription_facet, :pools => [:subscription]], -%>
 <%-   search: should_filter && "pools_expiring_in_days = #{days_from_now}" -%>
 <%- ).each_record do |host| -%>
@@ -47,7 +47,7 @@ require:
           'Subscription Start': pool.start_date,
           'Subscription End': pool.end_date,
           'Subscription Guest': registered_through(host),
-          'Subscription Expires In': "#{pool.days_until_expiration} days"
+          'Days Remaining': pool.days_until_expiration
           ) -%>
 <%-   end -%>
 <%- end -%>
